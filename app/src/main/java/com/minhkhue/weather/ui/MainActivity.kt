@@ -1,25 +1,19 @@
 package com.minhkhue.weather.ui
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
-import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
-import android.util.Log
-import android.view.WindowManager
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import coil.transform.CircleCropTransformation
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.material.snackbar.Snackbar
 import com.minhkhue.weather.R
 import com.minhkhue.weather.apdapter.DailyWeatherAdapter
 import com.minhkhue.weather.databinding.ActivityMainBinding
@@ -28,70 +22,96 @@ import com.minhkhue.weather.utils.Status
 import com.minhkhue.weather.utils.TimeUtils
 import com.minhkhue.weather.viewmodel.WeatherViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.IOException
 import java.util.*
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
 	private lateinit var binding: ActivityMainBinding
 	private val weatherViewModel: WeatherViewModel by viewModels()
-	private var latitude: Double = 0.0
-	private var longitude: Double = 0.0
-	private var fusedLocationProvider: FusedLocationProviderClient? = null
+	private var lat: Double = 0.0
+	private var lon: Double = 0.0
+	private var cityName: String = ""
+	private lateinit var locationManager: LocationManager
 	private lateinit var weatherAdapter: DailyWeatherAdapter
+	
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		binding = ActivityMainBinding.inflate(layoutInflater)
 		setContentView(binding.root)
-		window.setFlags(
-			WindowManager.LayoutParams.FLAG_FULLSCREEN,
-			WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		supportActionBar?.hide()
-		fusedLocationProvider = LocationServices.getFusedLocationProviderClient(this)
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-			== PackageManager.PERMISSION_GRANTED
-		) {
-			//When permission granted
-			getDeviceLocation()
-		} else {
-			//when permission denied
-			ActivityCompat.requestPermissions(
-				this,
-				arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-				69
-			)
-		}
+		getDeviceLocation()
 		setupObserver()
+	}
+	
+	override fun onRequestPermissionsResult(
+		requestCode: Int,
+		permissions: Array<out String>,
+		grantResults: IntArray
+	) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+		if (requestCode == PERMISSION_REQUEST_LOCATION) {
+			if (grantResults.size == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+				getDeviceLocation()
+				Snackbar.make(binding.root, "Permission granted", Snackbar.LENGTH_LONG)
+					.setAction("Action", null).show()
+			} else {
+				Snackbar.make(binding.root, "Permission not granted", Snackbar.LENGTH_LONG)
+					.setAction("Action", null).show()
+			}
+		}
 	}
 	
 	private fun getDeviceLocation() {
 		if (ActivityCompat.checkSelfPermission(
-				this,
+				this@MainActivity,
 				Manifest.permission.ACCESS_FINE_LOCATION
-			) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-				this,
+			) ==
+			PackageManager.PERMISSION_GRANTED &&
+			ActivityCompat.checkSelfPermission(
+				this@MainActivity,
 				Manifest.permission.ACCESS_COARSE_LOCATION
-			) != PackageManager.PERMISSION_GRANTED
+			) ==
+			PackageManager.PERMISSION_GRANTED
 		) {
-			
-			return
-		}
-		fusedLocationProvider?.lastLocation?.addOnCompleteListener {
-			val location: Location = it.result
-			val geocoder = Geocoder(this, Locale.getDefault())
-			try {
-				val address: MutableList<Address> =
-					geocoder.getFromLocation(location.latitude, location.longitude, 1)
-				if (address.size > 0) {
-					latitude = address[0].latitude
-					longitude = address[0].longitude
-					var cityName = address[0].locality
-					Log.d("TAG", "getDeviceLocation: $cityName")
-					weatherViewModel.getWeatherData(latitude, longitude)
-				}
-			} catch (ex: IOException) {
-				ex.printStackTrace()
+			locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+			locationManager.requestLocationUpdates(
+				LocationManager.GPS_PROVIDER,
+				5000,
+				0F
+			) { location ->
+				lat = location.latitude
+				lon = location.longitude
+				val geocoder = Geocoder(this, Locale.getDefault())
+				val address: MutableList<Address> = geocoder.getFromLocation(lat, lon, 1)
+				cityName = if (address[0].locality != null)
+					address[0].locality
+				else
+					"_ _"
+				binding.tvLocation.text = cityName
+				weatherViewModel.getWeatherData(lat, lon)
 			}
+		} else {
+			requestLocationPermission()
+		}
+	}
+	
+	private fun requestLocationPermission() {
+		if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+			requestPermissions(
+				arrayOf(
+					Manifest.permission.ACCESS_FINE_LOCATION,
+					Manifest.permission.ACCESS_COARSE_LOCATION
+				),
+				PERMISSION_REQUEST_LOCATION
+			)
+		} else {
+			requestPermissions(
+				arrayOf(
+					Manifest.permission.ACCESS_FINE_LOCATION,
+					Manifest.permission.ACCESS_COARSE_LOCATION
+				),
+				PERMISSION_REQUEST_LOCATION
+			)
 		}
 	}
 	
@@ -99,9 +119,8 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 		weatherViewModel.responseWeatherData.observe(this, { response ->
 			when (response.status) {
 				Status.SUCCESS -> {
-					//binding.tvLocation.text = cityName
 					binding.tvTemperature.text =
-						StringBuilder(response.data?.current?.temp.toString()).append(" ℃")
+						StringBuilder(response.data?.current?.temp?.toInt().toString()).append(" ℃")
 					binding.tvHumidity.text =
 						StringBuilder(response.data?.current?.humidity.toString()).append(" %")
 					binding.tvStatus.text = response?.data?.current?.weather?.get(0)?.description
@@ -128,9 +147,11 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 					setupUI()
 					renderList(response.data.daily)
 				}
-				Status.LOADING -> {}
+				Status.LOADING -> {
+				}
 				Status.ERROR -> {
-					Toast.makeText(this, response.message, Toast.LENGTH_LONG).show()
+					Snackbar.make(binding.root, response.message.toString(), Snackbar.LENGTH_SHORT)
+						.show()
 				}
 			}
 			
@@ -143,7 +164,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 	
 	private fun setupUI() {
 		weatherAdapter = DailyWeatherAdapter()
-		binding.rvWeather.apply {
+		binding.rvDailyWeather.apply {
 			adapter = weatherAdapter
 			layoutManager =
 				LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
@@ -151,4 +172,7 @@ class MainActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissionsRes
 		}
 	}
 	
+	companion object {
+		const val PERMISSION_REQUEST_LOCATION = 9696
+	}
 }

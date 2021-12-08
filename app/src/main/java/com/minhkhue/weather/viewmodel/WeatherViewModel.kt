@@ -17,6 +17,7 @@ class WeatherViewModel @Inject constructor(
 	private val weatherRepository: WeatherRepository,
 	private val networkHelper: NetworkHelper
 ) : ViewModel() {
+	
 	private val _response = MutableLiveData<Resource<WeatherResponse>>()
 	val responseWeatherData: LiveData<Resource<WeatherResponse>> get() = _response
 	

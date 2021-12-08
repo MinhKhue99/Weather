@@ -3,8 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Android/Android Kotlin/MVVM/Dagger Hilt/Weather/app/src/main/res/drawable/bottom_layout_background.xml" value="0.20046296296296295" />
+        <entry key="..\:/Android/Android Kotlin/MVVM/Dagger Hilt/Weather/app/src/main/res/drawable/ic_launcher_background.xml" value="0.20046296296296295" />
         <entry key="..\:/Android/Android Kotlin/MVVM/Dagger Hilt/Weather/app/src/main/res/layout/activity_main.xml" value="0.20615384615384616" />
         <entry key="..\:/Android/Android Kotlin/MVVM/Dagger Hilt/Weather/app/src/main/res/layout/item_daily_weather.xml" value="0.18" />
+        <entry key="..\:/Android/Android Kotlin/MVVM/Dagger Hilt/Weather/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.20046296296296295" />
       </map>
     </option>
   </component>

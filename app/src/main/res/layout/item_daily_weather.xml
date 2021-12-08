@@ -2,19 +2,18 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
+    android:layout_height="@dimen/dp_80"
+    android:layout_gravity="center"
     android:orientation="horizontal"
-    android:weightSum="4"
     >
 
     <TextView
         android:id="@+id/tvDate"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_100"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="Monday"
         android:textColor="@color/black"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -22,22 +21,23 @@
 
     <ImageView
         android:id="@+id/ivIcon"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_margin="10dp"
+        android:layout_width="@dimen/sp_40"
+        android:layout_height="@dimen/sp_40"
+        android:layout_gravity="center"
+        android:layout_marginStart="@dimen/dp_30"
         android:scaleType="fitXY"
-        android:src="@drawable/weather"
         />
 
     <TextView
         android:id="@+id/tvMinTemp"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="@dimen/dp_30"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="20"
         android:textColor="@color/black"
-        android:textSize="20sp"
+        android:textSize="@dimen/sp_20"
         android:textStyle="bold"
         />
 
@@ -45,11 +45,12 @@
         android:id="@+id/tvMaxTemp"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="@dimen/dp_30"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="20"
         android:textColor="@color/black"
-        android:textSize="20sp"
+        android:textSize="@dimen/sp_20"
         android:textStyle="bold"
         />
 </LinearLayout>

@@ -43,8 +43,8 @@ class DailyWeatherAdapter : RecyclerView.Adapter<DailyWeatherAdapter.WeatherView
 		val currentResponse = response[position]
 		holder.binding.apply {
 			tvDate.text = TimeUtils.convertWeekDays(currentResponse.dt)
-			tvMaxTemp.text = StringBuilder(currentResponse.temp.max.toString()).append(" ℃")
-			tvMinTemp.text = StringBuilder(currentResponse.temp.min.toString()).append(" ℃")
+			tvMaxTemp.text = StringBuilder(currentResponse.temp.max.toInt().toString()).append(" ℃")
+			tvMinTemp.text = StringBuilder(currentResponse.temp.min.toInt().toString()).append(" ℃")
 			ivIcon.load("https://openweathermap.org/img/w/" + currentResponse.weather[0].icon + ".png") {
 				crossfade(true)
 				placeholder(R.drawable.weather)

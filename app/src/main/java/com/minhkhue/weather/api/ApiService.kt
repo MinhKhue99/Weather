@@ -12,7 +12,7 @@ interface ApiService {
 	suspend fun getWeatherData(
 		@Query("lat") lat: Double,
 		@Query("lon") lon: Double,
-		@Query("units") units:String = Constants.UNITS,
+		@Query("units") units: String = Constants.UNITS,
 		@Query("appid") key: String = Constants.API_KEY
 	): Response<WeatherResponse>
 }
